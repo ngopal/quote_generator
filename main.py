@@ -1,4 +1,4 @@
-from flask import Flask, url_for, render_template, g
+from flask import Flask, url_for, render_template, g, redirect
 import random
 import sqlite3
 
@@ -29,6 +29,7 @@ def query_db(query, args=(), one=False):
 	rv = [dict((cur.description[idx][0], value) for idx, value in enumerate(row)) for row in cur.fetchall()]
 	return (rv[0] if rv else None) if one else rv
 
+
 @app.route('/')
 def index():
 	def generate_quote():
@@ -46,7 +47,23 @@ def index():
 
 @app.route('/quote/<id>')
 def show_quote_by_id(id):
-	return 'Quote by ID %s' % id
+	quote = 'You fail.'
+	def get_quote(id):
+		ids = [i['id'] for i in query_db('SELECT id from quotes')]
+                if int(id) < 0 or int(id) > len(ids):
+			redirect('page_not_found')
+		out = query_db('SELECT * FROM quotes WHERE id =='+str(ids[int(id)]))
+		print out
+		return out[0]['quote']
+	try:
+		quote = get_quote(id)
+	except:
+		redirect(url_for('index'))
+	return render_template('main.html', quote=quote)
+
+@app.errorhandler
+def page_not_found(error):
+	return '404 bucko', 404
 
 if __name__ == "__main__":
 	app.debug = True
