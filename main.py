@@ -1,5 +1,6 @@
 from flask import Flask, url_for, render_template, g
 import random
+import sqlite3
 
 DATABASE = 'quotes.db'
 
@@ -7,6 +8,15 @@ app = Flask(__name__)
 
 def connect_db():
 	return sqlite3.connect(DATABASE)
+
+@app.before_request
+def before_request():
+	g.db = connect_db()
+
+@app.teardown_request
+def teardown_request(exception):
+	if hasattr(g, 'db'):
+		g.db.close()
 
 def get_connection():
 	db  = getattr(g, '_db', None)
@@ -23,10 +33,10 @@ def query_db(query, args=(), one=False):
 def index():
 	def generate_quote():
 		index = str(random.randint(0,640))
-		randquery = 'SELECT * FROM quotes'
-		for k in query_db(randquery):
-			print k
-		return randquery 
+		randquery = 'SELECT * FROM quotes WHERE id == '+str(index)
+		result = query_db(randquery)
+		print index, result
+		return result[0]['quote']
 	try:
 		quote = generate_quote()
 	except:
