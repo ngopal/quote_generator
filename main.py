@@ -32,10 +32,11 @@ def query_db(query, args=(), one=False):
 @app.route('/')
 def index():
 	def generate_quote():
-		index = str(random.randint(0,640))
-		randquery = 'SELECT * FROM quotes WHERE id == '+str(index)
+		ids = [i['id'] for i in query_db('SELECT id from quotes')]
+		index = int(random.randint(0,len(ids)))
+		randquery = 'SELECT * FROM quotes WHERE id == '+str(ids[index])
+		print randquery
 		result = query_db(randquery)
-		print index, result
 		return result[0]['quote']
 	try:
 		quote = generate_quote()
