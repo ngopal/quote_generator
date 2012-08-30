@@ -61,9 +61,9 @@ def show_quote_by_id(id):
 		redirect(url_for('index'))
 	return render_template('main.html', quote=quote)
 
-@app.errorhandler
-def page_not_found(error):
-	return '404 bucko', 404
+@app.errorhandler(404)
+def not_found(error):
+	return render_template('error.html'), 404
 
 if __name__ == "__main__":
 	app.debug = True
